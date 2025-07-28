@@ -1,0 +1,144 @@
+📁 MHs_First_Voice_AI Project Code
+
+This project includes:
+
+- Python backend (Flask + simple AI response + Text-to-Speech)
+
+- Android Kotlin front-end (voice UI)
+
+=============================
+
+📂 backend/app.py
+
+=============================
+
+from flask import Flask, request, jsonify, send_file from model import get_ai_response from tts import text_to_speech import os
+
+app = Flask(name)
+
+@app.route("/ask", methods=["POST"]) def ask(): data = request.json message = data.get("message") response = get_ai_response(message) return jsonify({"response": response})
+
+@app.route("/audio", methods=["POST"]) def audio(): data = request.json message = data.get("message") audio_path = text_to_speech(message) return send_file(audio_path, mimetype="audio/wav")
+
+if name == "main": app.run(debug=True)
+
+=============================
+
+📂 backend/model.py
+
+=============================
+
+def get_ai_response(message): # Simple rule-based response (can be replaced with a local model like flan-t5) if "hello" in message.lower(): return "Hi there! How can I help you today?" elif "time" in message.lower(): from datetime import datetime return f"Current time is {datetime.now().strftime('%H:%M:%S')}" else: return "Sorry, I didn't understand that."
+
+=============================
+
+📂 backend/tts.py
+
+=============================
+
+import pyttsx3 import uuid
+
+def text_to_speech(text): engine = pyttsx3.init() engine.setProperty('rate', 150) engine.setProperty('voice', 'com.apple.speech.synthesis.voice.tessa' if 'apple' in engine.getProperty('name').lower() else '') filename = f"temp_{uuid.uuid4()}.wav" engine.save_to_file(text, filename) engine.runAndWait() return filename
+
+=============================
+
+📂 backend/requirements.txt
+
+=============================
+
+flask pyttsx3
+
+=============================
+
+📂 android_app/MainActivity.kt (simplified)
+
+=============================
+
+// Kotlin Android code outline package com.mhsfirst
+
+import android.os.Bundle import androidx.appcompat.app.AppCompatActivity import android.widget.Button import android.widget.TextView import android.speech.tts.TextToSpeech import java.util.*
+
+class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener { lateinit var tts: TextToSpeech override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState) setContentView(R.layout.activity_main)
+
+tts = TextToSpeech(this, this)
+    val button: Button = findViewById(R.id.ask_button)
+    val text: TextView = findViewById(R.id.response_text)
+
+    button.setOnClickListener {
+        val message = "What's the time?"
+        val response = askAI(message)
+        text.text = response
+        tts.speak(response, TextToSpeech.QUEUE_FLUSH, null, null)
+    }
+}
+
+fun askAI(message: String): String {
+    // Simplified: Make POST request to Flask server and get response
+    return "Simulated response from server"
+}
+
+override fun onInit(status: Int) {
+    if (status == TextToSpeech.SUCCESS) {
+        tts.language = Locale.US
+    }
+}
+
+}
+
+=============================
+
+📂 android_app/res/layout/activity_main.xml
+
+=============================
+
+<?xml version="1.0" encoding="utf-8"?><LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:orientation="vertical"
+android:padding="16dp">
+
+<Button
+    android:id="@+id/ask_button"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Ask AI" />
+
+<TextView
+    android:id="@+id/response_text"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Response will appear here"
+    android:padding="8dp" />
+
+</LinearLayout>=============================
+
+📄 README.md
+
+=============================
+
+MH's First Voice AI
+
+A personal AI assistant with voice input/output built using Python and Kotlin.
+
+Features
+
+Voice-based interaction
+
+AI responses (simple rule-based or lightweight model)
+
+Text-to-Speech output
+
+Android app frontend
+
+
+How to Run
+
+cd backend
+pip install -r requirements.txt
+python app.py
+
+Then open the Android app and test.
+
+License
+
+MIT License
